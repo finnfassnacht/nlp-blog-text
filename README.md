@@ -1,18 +1,20 @@
 # Deploying NLP models to IBM Code Engine
 Recently, there has been an explosion of popularity around AI, particularly NLP Models, due to their ability to interact with text in a human-like way and perform various language tasks with remarkable accuracy. Huggingface is an open-source library for natural language processing that has gained widespread popularity due to its extensive collection of pre-trained models and user-friendly tools.
 
-In this blog post, we'll provide a step-by-step guide on deploying NLP Models from Huggingface to IBM Code Engine. We'll also include code snippets to help you follow along and get started with deploying Huggingface models to IBM Code Engine.
+In this blog post, we'll provide a step-by-step guide on deploying NLP Models from Huggingface to IBM Cloud Code Engine. We'll also include code snippets to help you follow along.
+
 For this tutorial, we'll be using Python3 as our programming language, and our NLP model of choice will be the LLM GPT-Neo-125M by EleutherAI.
 
 ## Prerequisites
-* Basic Knowledge about Huggingface
-* Basic Knowledge about container images
-* Knowledge of IBM Code Engine and how to deploy a basic app (find out [here](https://www.ibm.com/cloud/blog/deploying-a-simple-http-server-to-ibm-cloud-code-engine-from-source-code-using-python-node-and-go))
+* Basic knowledge about Huggingface
+* Basic knowledge of container images
+* Knowledge of IBM Code Engine and how to deploy a basic app (find out more[here](https://www.ibm.com/cloud/blog/deploying-a-simple-http-server-to-ibm-cloud-code-engine-from-source-code-using-python-node-and-go))
 * An IBM Cloud account with sufficient privileges to create and manage resources
 
 ## Get your Model
 
 Before we can begin deploying or generating text using the GPT-Neo 125M model, we need to obtain the model files. These files can be downloaded using git from the EleutherAI [GitHub repository](https://huggingface.co/EleutherAI/gpt-neo-125m/tree/main) on Huggingface's website. Once downloaded, we can begin working with the model.
+
 1. Make sure that you have git LFS (large file storage) installed
 ```
 git lfs install
@@ -31,12 +33,12 @@ Now that you have downloaded the GPT-Neo 125M model files, we can begin using th
 
 Before we can start using the our model to generate text, we need to ensure that we have all the necessary packages install.
 
-To do that we need to install Pytorch and Transformers.
+To do that we need to install Pytorch and transformers.
 1. Install PyTorch for CPUs by running the following command:
 ```
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
-2. Install the Transformers library by running the following command:
+2. Install the transformers library by running the following command:
 ```
 pip3 install transformers
 ```
@@ -56,12 +58,12 @@ res = generator('hello my name is', max_length=20, do_sample=True, temperature=0
 # Print the generated text
 print(res)
 ```
-4. Save & Execute, congratulations you just generated Text with your local Large Language Model !
+4. Save & execute, congratulations you just generated text with your local LLM (Large Language Model) !
 
-## Make a server
+## Create a server
 To interact with the Large Language Model (LLM) post-deployment, we need to set up a server that can handle requests and return generated text from the model. This can be achieved by creating a simple HTTP server on port 8080 and serving a single route that accepts prompts and returns the  corresponding generated text. We will then combine the server with our previous text generation program to enable it to return generated text.
 
-**Sample sever with previous code integrated:**
+**Sample server with previous code integrated:**
 ```python
 
 from flask import Flask
@@ -87,21 +89,22 @@ port = os.getenv('PORT', '8080')
 if __name__ == "__main__":
 	app.run(host='0.0.0.0',port=int(port))
 ```
-After Saving and Executing you should be able to curl your route.
+After saving and executing you should be able to curl your route:
 ```
 ccurl http://127.0.0.1:8080/api/gpt-neo/?prompt=hello
 ```
-Or Open it in your Browser [here](http://127.0.0.1:8080/api/gpt-neo/?prompt=hello)
+Or Open it in your browser [here](http://127.0.0.1:8080/api/gpt-neo/?prompt=hello)
 
 ## Deployment Options
-Now that we know how to install and use our model locally, let's talk about how we can run it on Code Engine. 
+Now that we know how to install and use our model locally, let's talk about how we can run it on IBM Cloud Code Engine. 
 
 Code Engine enables you to take or create an image and run it on containers to deploy your app. Each container has a bit of storage called "ephemeral storage," which is like a little hard drive for each container. We can use this storage to store our model, however it's important to note that when a container is terminated, its ephemeral storage is also terminated.
 
-### We have two main Options to deploy our model
-**Including Your Model in the Container Image**
+### We have two options to deploy our model
 
-A method to deploy your model to the cloud is to include the model in the container image. Do this by  including your Model alongside your code when building the container image. This way, when the container is launched, the model is available immediately, and you can start generating text right away.
+**Including Your model in the container image**
+
+A method to deploy your model to the cloud is to include the model in the container image. Do this by including your model alongside your code when building the container image. This way, when the container is launched, the model is available immediately, and you can start generating text right away.
 
 >Pros:
 
@@ -111,9 +114,9 @@ A method to deploy your model to the cloud is to include the model in the contai
 
 * Including models in the container image increases the image size, leading to longer launching times, and in some cases, the size of the model may prevent launching the container altogether.
 
-**Including Your Compressed Model in the Container Image**
+**Including your compressed model in the container image**
 
-Another method to deploy your model to the cloud is to include a compressed version of the model in the container image. Do this by including a compressed version of your Model alongside your code when building the container image. When the container is launched, the model is decompressed and then used.
+Another method to deploy your model to the cloud is to include a compressed version of the model in the container image. Do this by including a compressed version of your model alongside your code when building the container image. When the container is launched, the model is decompressed and then used.
 
 **Previous code with decompression integrated:**
 ```python
@@ -152,15 +155,15 @@ if __name__ == "__main__":
 
 >Pros:
 
-* Compressing your Model leads to a small image size and therefore faster launching.
+* Compressing your model leads to a small image size and therefore faster launching.
 
 >Cons:
-* Model needs to be decompressed fist
+* The model needs to be decompressed fist
 
 
 It's important to choose the deployment option that best suits your specific use case. As a rule of thumb, if you have a relatively small model (100MB-200MB), option one (including the model in the container image) may be the best choice. If you have a larger-sized model (500MB-1.5GB), option two (including the compressed model in the container image) may be more suitable. Ultimately, the decision will depend on the specific details of your use case. Keep in mind that Code Engine only supports CPUs and no GPUs, which means that Code Engine isn't suited for really big models anyway.
 
-## Creating your Image
+## Creating your image
 
 
 I will be using Podman to build images. If you don't have it installed already, you can do so [here](https://podman.io/getting-started/installation). Alternatively, you can use Docker.
@@ -206,26 +209,26 @@ podman tag --namespace--/gpt-neo:latest icr.io/--namespace--/gpt-neo:v1
 Once you have completed these steps, you should have a container image with your PyTorch model and Flask server ready to be deployed.
 ## Deploy your Image
 
-* ### Push your Image to the Container Registry
+* ### Push your image to the container registry
 1. Login to the CLI
 ```
 ibmcloud login
 ```
-2. If you don't have it already install the Container Registry Plugin
+2. If you don't have it already install the container registry plugin
 ```
 ibmcloud plugin install container-registry
 ```
-3. Authorize your Client
+3. Authorize your client
 ```
 ibmcloud cr login --client podman
 ```
-4. Push your Image to the Container Registry
+4. Push your image to the container registry
 ```
 podman push icr.io/--namespace--/gpttest:v1
 ```
 ## Create your application 
 
-* ### Setup a Registry Secret
+* ### Setup a registry secret
 Whenever possible, it is best to use a private container registry to store your container images. A private container registry can only be accessed within the IBM Cloud, which means that all traffic is routed through the cloud and not the public internet. This results in faster speeds and better security. Using a private container registry requires a registry-secret.
 
 **Using the Web UI**
@@ -241,7 +244,7 @@ To create a registry secret:
 ```
 ibmcloud ce secret create --format registry --name myaccess --server private.icr.io --username iamapikey --password <yourpassword>
 ```
-Now that we have a access to your private container registry we can launch our App.
+Now that we have a access to your private container registry we can launch our app.
 
 **Using the CLI**
 ```
@@ -265,8 +268,9 @@ ibmcloud ce app create --name gptzip --image private.icr.io/mynamespace1/gptzip:
 9. Click "Done" and then "Runtime settings"
 10. Finally select 2GB in Ephemeral storage and click "Create"
 
-After the Code Engine is finished deploying your App, you can play around with your Model online!!
-Congratulations you just hosted your NLP model using IBM Code Engine
+After Code Engine is finished deploying your app, you can play around with your model online.
+
+Congratulations you just hosted your NLP model using IBM Cloud Code Engine!
 
 
 ## In conclusion
