@@ -76,7 +76,7 @@ generator = pipeline(task='text-generation', model='model/gpt-neo-125m')
 app = Flask(__name__)
 # set up a route at /api/gpt-neo/
 @app.route('/api/gpt-neo/', methods=['GET'])
-def foo():
+def generate_text():
     # get argumetns from user
     data = request.args.to_dict()
     # run text generation
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 ```
 After saving and executing you should be able to curl your route:
 ```
-ccurl http://127.0.0.1:8080/api/gpt-neo/?prompt=hello
+curl http://127.0.0.1:8080/api/gpt-neo/?prompt=hello
 ```
 Or Open it in your browser [here](http://127.0.0.1:8080/api/gpt-neo/?prompt=hello)
 
@@ -136,8 +136,8 @@ generator = pipeline(task='text-generation', model='model/gpt-neo-125m')
 app = Flask(__name__)
 # set up a route at /api/gpt-neo/
 @app.route('/api/gpt-neo/', methods=['GET'])
-def foo():
-    # get argumetns from user
+def generate_text():
+    # get arguments from user
     data = request.args.to_dict()
     # run text generation
     res = generator(data["prompt"], max_length=20, do_sample=True, temperature=0.9,  pad_token_id=50256) # generate
@@ -161,7 +161,7 @@ if __name__ == "__main__":
 * The model needs to be decompressed fist
 
 
-It's important to choose the deployment option that best suits your specific use case. As a rule of thumb, if you have a relatively small model (100MB-200MB), option one (including the model in the container image) may be the best choice. If you have a larger-sized model (500MB-1.5GB), option two (including the compressed model in the container image) may be more suitable. Ultimately, the decision will depend on the specific details of your use case. Keep in mind that Code Engine only supports CPUs and no GPUs, which means that Code Engine isn't suited for really big models anyway.
+It's important to choose the deployment option that best suits your specific use case. As a rule of thumb, if you have a relatively small model (100MB-200MB), option one (including the model in the container image) may be the best choice. If you have a larger-sized model (500MB-1.5GB), option two (including the compressed model in the container image) may be more suitable. Ultimately, the decision will depend on the specific details of your use case. Keep in mind that at the time this blog article was written, Code Engine only supports CPUs and no GPUs, which means that Code Engine isn't suited for really big models anyway.
 
 ## Creating your image
 
@@ -229,7 +229,7 @@ podman push icr.io/--namespace--/gpttest:v1
 ## Create your application 
 
 * ### Setup a registry secret
-Whenever possible, it is best to use a private container registry to store your container images. A private container registry can only be accessed within the IBM Cloud, which means that all traffic is routed through the cloud and not the public internet. This results in faster speeds and better security. Using a private container registry requires a registry-secret.
+Whenever possible, it is best to use a private container registry to store your container images. A private container registry can only be accessed within the IBM Cloud, which means that all traffic is routed through the cloud and not the public internet. This results in faster speeds and better security. Using a private container registry also protects your images form beeing pulled by anyone, this requires a registry-secret.
 
 **Using the Web UI**
 
