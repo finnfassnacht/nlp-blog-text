@@ -77,7 +77,7 @@ app = Flask(__name__)
 # set up a route at /api/gpt-neo/
 @app.route('/api/gpt-neo/', methods=['GET'])
 def generate_text():
-    # get argumetns from user
+    # get arguments from user
     data = request.args.to_dict()
     # run text generation
     res = generator(data["prompt"], max_length=20, do_sample=True, temperature=0.9,  pad_token_id=50256) # generate
